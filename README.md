@@ -10,6 +10,31 @@ implementation to worker lanes:
 > plan with **dev-flow** → assign each issue to exactly one lane with
 > **issue-lane** → supervise event-driven with **herdr-event-watch**.
 
+## Why — the problem and the solution
+
+**Problem: putting a frontier model on everything is expensive.** A single
+strong session that plans, implements, and reviews burns top-tier tokens
+mostly on mechanical work — and implementation is the bulk of the tokens.
+Worse, without structure the strong model quietly stays on for work that a
+cheaper model does just as well (we measured exactly this drift in
+production: boosted lanes carried an expensive model into unrelated issues).
+
+**Solution: separate judgment from execution.**
+
+| Role | Model tier | Token share | What it does |
+|---|---|---|---|
+| PO (1 per project) | frontier (Opus 4.8 / Fable 5) | small | plan, design gates, file issues, verify receipts, adjudicate |
+| Workers (1 per issue) | standard (`sonnet` / `gpt-5.6-terra` medium) | bulk | execute well-specified issues, produce receipts |
+| Boost / spot review | frontier, **temporary** | exceptional | stuck-breakthrough, blocking reviews — ledger-controlled |
+
+The judgment-heavy loop is a small fraction of total tokens, so the frontier
+model is paid for only where it changes outcomes. The token bulk —
+implementation of already-specified work — runs on commodity gear. And because
+every boost requires an open ledger entry and every lane dies with its issue
+(issue-lane), expensive-model drift is structurally impossible instead of
+merely discouraged: frontier quality at the decision points, commodity cost
+for the volume.
+
 ## Skills
 
 | Skill | What it enforces |
