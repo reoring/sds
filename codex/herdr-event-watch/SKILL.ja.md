@@ -1,24 +1,24 @@
-# herdr-event-watch — event-driven な lane/PR 監視(Codex 版)
+# herdr-event-watch — lane と PR のイベント駆動監視(Codex 版)
 
-[English](SKILL.md) | **日本語**(参考訳 — 正本は英語版)
+[English](SKILL.md) | **日本語**(参考訳 — 実行時に読み込まれる正本は英語版)
 
-> herdr lane・耐久 inbox artifact・PR required check を、固定間隔ポーリングの
-> 代わりに event-driven で監視する。worker lane の監督(「X が終わったら教えて」)、
-> merge 判定前の PR check 待ち、定期巡回が「変化なし」ばかりのときに使う。
-> `scripts/herdr-event-watch.sh` を background terminal で走らせ、emit される
-> イベント行に反応する。
+> herdr の lane・成果物ファイル(inbox)・PR 必須チェックを、定期ポーリングの
+> 代わりにイベント駆動で見守る。worker lane の監督(「X が終わったら教えて」)、
+> merge 判定前の PR チェック待ち、定期巡回が「変化なし」ばかりになったときに使う。
+> `scripts/herdr-event-watch.sh` をバックグラウンドターミナルで走らせて、
+> 出力されるイベント行に反応する。
 
-スケジュールでポーリングする代わりに、何かが変わった瞬間に通知を受ける。
-固定間隔巡回は二重に損: 開始3分で park した lane に最大インターバル分気づかず、
-何も起きていなくてもターンを焼く。
+決まった間隔で見に行く代わりに、何かが変わったその瞬間に知る。定期巡回は二重に
+損をする — 開始3分で終わった lane に最長で丸々1周期気づけないし、何も起きて
+いなくてもターンを消費し続ける。
 
-## 使い方(Codex ランタイム: background terminal)
+## 使い方(Codex ランタイム: バックグラウンドターミナル)
 
-Codex には持続 Monitor ツールが無い — watcher を **background terminal** で
-走らせ、フォアグラウンドに戻ったときに出力を確認する:
+Codex には常駐の監視ツールがない。そこで watcher を**バックグラウンド
+ターミナル**で走らせ、フォアグラウンドに戻ったときに出力を確認する:
 
 ```bash
-# 起動(background terminal で)
+# 起動(バックグラウンドターミナルで)
 bash <skill-dir>/scripts/herdr-event-watch.sh \
   --workspace <wsId> --prefix <laneLabelPrefix> \
   --inbox <receiptDir> --inbox-prefix <filePrefix> \
@@ -26,48 +26,50 @@ bash <skill-dir>/scripts/herdr-event-watch.sh \
   | tee /tmp/herdr-events.$$.log
 ```
 
-- stdout 1行 = 1イベント。`tee` で耐久ログを残し、作業中のイベントを失わない
-- background terminal 無しの単発確認は `--once`
-- **park する前に** background terminal を `/stop` で止める — 漏れた watcher
-  プロセスはターンを越えて生き残る
+- 標準出力の1行 = 1イベント。`tee` でログを残しておけば、作業している間の
+  イベントも失われない
+- バックグラウンドを使わず一度だけ状態を見たいなら `--once`
+- **待機する前に、バックグラウンドターミナルを `/stop` で止める。** 取り残された
+  watcher プロセスはあなたのターンを越えて生き続けてしまう
 
 ## 引数
 
 | 引数 | 必須 | 意味 |
 |---|---|---|
-| `--workspace` | ✔ | herdr workspace ID(`herdr workspace list`)|
-| `--prefix` | | lane ラベル前方一致フィルタ(既定: 全 labeled pane)|
-| `--inbox`(複数可) | | **耐久 artifact 到着監視(primary)** — receipt/verdict の落ちる dir |
-| `--inbox-prefix` | | ファイル名前方一致フィルタ |
-| `--repo` / `--pr`(複数可) | | PR required check 監視 |
-| `--check` | | required check 名(既定 `cloud`)|
-| `--interval` | | poll 秒(既定 10。gh は約1回/分に間引き)|
-| `--once` | | 1周で exit |
+| `--workspace` | ✔ | herdr の workspace ID(`herdr workspace list` で確認)|
+| `--prefix` | | lane ラベルの前方一致で絞り込み(省略時はラベル付き pane 全部)|
+| `--inbox`(複数可)| | **成果物ファイルの到着監視(主信号)** — receipt や判定書が置かれるディレクトリ |
+| `--inbox-prefix` | | ファイル名の前方一致で絞り込み |
+| `--repo` / `--pr`(複数可)| | PR 必須チェックの監視 |
+| `--check` | | 必須チェックの名前(既定 `cloud`)|
+| `--interval` | | ポーリング間隔・秒(既定 10。gh の呼び出しは約1分に1回へ自動間引き)|
+| `--once` | | 1周だけ回して終了 |
 
-## イベント
+## 通知されるイベント
 
-- `INBOX <filename>` — 耐久 artifact 到着。取りこぼし無し(primary)。
-  既存ファイルは無音の基準線 — watcher (再)起動後は古い到着分を手動 sweep
-  (`ls -t`)
-- `LANE <label>=done|blocked` — サンプリングされた遷移。transient は落ちうる。
-  stall/blocked 検出の backstop
-- `CI PR#<n> <check> -> pass|fail (head <sha>)` — PR×結果×head ごとに1回
-- `WATCH ERROR <msg>` — 監視自体の継続的失敗
+- `INBOX <ファイル名>` — 成果物ファイルが届いた。ファイルは消えないので絶対に
+  取りこぼさない(主信号)。監視開始時点で既にあったファイルは沈黙の基準線 —
+  watcher を(再)起動したら、それ以前の到着分を手で確認する(`ls -t`)
+- `LANE <ラベル>=done|blocked` — サンプリングされた状態遷移。一瞬の状態は
+  取りこぼしうる。停滞・blocked 検出の保険として使う
+- `CI PR#<n> <チェック名> -> pass|fail (head <sha>)` — PR ×結果× head の組ごとに1回
+- `WATCH ERROR <メッセージ>` — 監視そのものが失敗し続けている
 
-## 設計ルール
+## 設計上の決めごと
 
-1. working⇄idle の揺れは流さない — done/blocked のみ
-2. CI は pass も fail も emit(silence ≠ success)
-3. gh/herdr の一時エラーでループを殺さない。継続失敗のみ WATCH ERROR
-4. watcher 死亡に備えて粗い時間ベース巡回を backstop に残す
+1. working⇄idle の揺れは通知しない — done と blocked だけ
+2. CI は pass も fail も通知する(「音沙汰なし = 成功」ではない)
+3. gh / herdr の単発エラーで監視を殺さない。失敗が続いたときだけ WATCH ERROR
+4. watcher が死んだときに備えて、粗い時間ベースの巡回も保険として残す
 
-## 罠(実測済み)
+## 落とし穴(すべて実際に踏んだもの)
 
-- ラベル無し pane は監視に映らない — lane 作成時に必ずラベル
-  (issue-lane の二層規則)
-- 1 watcher に PR を積みすぎると gh rate limit — 判定待ちの PR だけに絞る
-- **`done` は transient**: worker の done は poll の隙間に消費されうる。
-  耐久 inbox artifact を primary の信号にし、worker には「receipt を書いて
-  **から** park」を守らせる
-- 通知は「見ろ」であって「信じろ」ではない — 行動する前に pane/receipt を
-  自分で読む
+- ラベルのない pane は監視に映らない — lane を立てたら必ずラベルを付ける
+  (issue-lane の二層ラベル規則)
+- 1本の監視に PR を積みすぎると gh のレート制限に当たる — いままさに判定待ちの
+  PR だけに絞る
+- **`done` は一瞬で消えることがある**: worker の done は、キューに溜まっていた
+  次の指示が届いた瞬間にポーリングの隙間へ落ちる。主信号は消えない成果物ファイル
+  にすること。worker には「receipt を書いて**から**待機する」順番を守らせる
+- 通知は「見に行け」の合図であって、「信じろ」ではない — 動く前に pane と
+  receipt を自分の目で読む
