@@ -1,28 +1,33 @@
-# herdr-event-watch — event-driven な lane/PR 監視
+# herdr-event-watch — lane と PR のイベント駆動監視
 
-[English](SKILL.md) | **日本語**(参考訳 — 正本は英語版)
+[English](SKILL.md) | **日本語**(参考訳 — 実行時に読み込まれる正本は英語版)
 
-> herdr fleet の監督を固定間隔巡回から event-driven に切り替える。lane の
-> done/blocked 遷移、PR required check の pass/fail 確定、耐久 inbox artifact の
-> 到着だけを Monitor ツール経由で通知させる。「event driven で監視」「lane/PR が
-> 終わったら教えて」、定期巡回が「変化なし」報告ばかりになったときに使う。
+> herdr fleet の見守りを、定期巡回からイベント駆動に切り替える。lane の
+> done/blocked への遷移、PR 必須チェックの pass/fail 確定、成果物ファイルの
+> 到着だけを、Monitor ツール経由で通知させる。「イベント駆動で監視して」
+> 「この lane / PR が終わったら教えて」と言いたいとき、あるいは定期巡回が
+> 「変化なし」の報告ばかりになってきたときに使う。
 
-**何かが変わった瞬間**に通知を受けるための正本手順。固定間隔巡回は二重に損する:
-開始3分で park した lane に最大インターバル分気づかず、何も起きていなくても回る。
+**何かが変わったその瞬間**に知るための正式手順。決まった間隔で見に行く巡回は
+二重に損をする — 開始3分で終わった lane に最長で丸々1周期気づけないし、
+何も起きていなくても回り続ける。
 
-## いつ使うか
+## こういうときに
 
-- worker/review lane を複数走らせていて、PARK(done)/ blocked を即座に拾いたい
-- merge 判定の前に PR required check(branch protection)の green/fail を待ちたい
-- 定期の「worker 巡回」cron が「変化なし」報告に形骸化してきた
+- worker やレビューの lane を何本も走らせていて、完了(done)や blocked を
+  すぐ拾いたい
+- merge の判断をする前に、PR の必須チェック(branch protection)が通るか落ちるかを
+  待ちたい
+- 定期の「worker 巡回」が毎回「変化ありません」で形骸化してきた
 
 ## 使い方
 
-Monitor を **persistent: true** で1本 arm する(lane と CI を同じ watcher で見る):
+Monitor ツールを **persistent: true** で1本だけ立てる(lane と CI を同じ監視で
+面倒みる):
 
 ```
 Monitor({
-  description: "<何を見ているか — 例: api lanes + inbox + PR #109 CI>",
+  description: "<何を見ているか — 例: api の lane 群 + inbox + PR #109 の CI>",
   persistent: true,
   command: "bash <skill-dir>/scripts/herdr-event-watch.sh \
     --workspace <wsId> --prefix <laneLabelPrefix> \
@@ -35,58 +40,63 @@ Monitor({
 
 | 引数 | 必須 | 意味 |
 |---|---|---|
-| `--workspace` | ✔ | herdr workspace ID(`herdr workspace list`)|
-| `--prefix` | | lane ラベルの前方一致フィルタ(例 `api/`)。省略時は全 labeled pane |
-| `--inbox`(複数可) | | **耐久 artifact 到着監視(primary)** — receipt/verdict が落ちる dir |
-| `--inbox-prefix` | | ファイル名の前方一致フィルタ |
-| `--repo` / `--pr`(複数可) | | PR required check 監視。省略時は lane のみ |
-| `--check` | | required check 名(既定 `cloud`)|
-| `--interval` | | poll 秒(既定 10。gh は約60秒に1回に自動間引き)|
-| `--once` | | 1周だけ回して exit(動作確認用)|
+| `--workspace` | ✔ | herdr の workspace ID(`herdr workspace list` で確認)|
+| `--prefix` | | lane ラベルの前方一致で絞り込み(例 `api/`)。省略時はラベル付き pane 全部 |
+| `--inbox`(複数可)| | **成果物ファイルの到着監視(主信号)** — receipt や判定書が置かれるディレクトリ |
+| `--inbox-prefix` | | ファイル名の前方一致で絞り込み |
+| `--repo` / `--pr`(複数可)| | PR 必須チェックの監視。省略すれば lane だけ見る |
+| `--check` | | 必須チェックの名前(既定 `cloud`)|
+| `--interval` | | ポーリング間隔・秒(既定 10。gh の呼び出しは自動で約1分に1回へ間引く)|
+| `--once` | | 1周だけ回して終了(動作確認用)|
 
-## イベント(stdout 1行 = 1通知)
+## 通知されるイベント(標準出力の1行 = 1通知)
 
-- `INBOX <filename>` — 新ファイル到着。**耐久 artifact なので取りこぼし無し
-  (primary)。** watch 開始時の既存ファイルは基準線(無音)— 再 arm 後は
-  停止中の到着分を手動 sweep する
-- `LANE <label>=done|blocked` — lane がその状態に遷移した瞬間。サンプリングなので
-  transient は落ちうる(罠参照)— stall/blocked 検出の backstop として使う
-- `CI PR#<n> <check> -> pass|fail (head <sha>)` — required check の終端確定。
-  PR×結果×head ごとに1回(head を dedup キーに含むので、update-branch 後の
-  新 head での再確定も emit される)
-- `WATCH ERROR <msg>` — 監視自体の継続的失敗
+- `INBOX <ファイル名>` — 新しいファイルが届いた。**ファイルは消えないので
+  絶対に取りこぼさない(主信号)。** 監視開始時点で既にあったファイルは基準線として
+  沈黙する — 監視を立て直したときは、止まっていた間の到着分を手で確認すること
+- `LANE <ラベル>=done|blocked` — lane がその状態に変わった瞬間。ただし
+  サンプリングなので、一瞬だけの状態は取りこぼすことがある(下の「落とし穴」参照)。
+  停滞・blocked 検出の保険として使う
+- `CI PR#<n> <チェック名> -> pass|fail (head <sha>)` — 必須チェックの確定。
+  PR ×結果× head の組ごとに1回だけ(head を判定キーに含むので、update-branch 後の
+  新しい head での再確定もちゃんと通知される)
+- `WATCH ERROR <メッセージ>` — 監視そのものが失敗し続けている
 
-## 設計ルール(変更前に読む)
+## 設計上の決めごと(変更する前に読む)
 
-1. **working⇄idle の揺れは流さない。** done/blocked のみ — ノイズは event-driven
-   監督を殺す
-2. **CI は pass も fail も emit**(silence ≠ success)。fail を出せない監視は片目
-3. **一時失敗でループを殺さない。** gh/herdr の単発エラーは握りつぶし、
-   継続失敗のみ WATCH ERROR
-4. **時間ベース巡回を backstop として残す。** イベントが primary、cron は
-   watcher 死亡時の保険。cron 側は「状態確認 → 変化なければ即終了」で二重処理回避
+1. **working⇄idle の揺れは通知しない。** done と blocked だけ。ノイズはイベント
+   監視そのものを台無しにする
+2. **CI は pass も fail も通知する。**「音沙汰なし = 成功」ではない。失敗を
+   拾えない監視は片目だ
+3. **一度の失敗で監視を殺さない。** gh や herdr の単発エラーは飲み込み、
+   失敗が続いたときだけ WATCH ERROR を出す
+4. **時間ベースの巡回も保険として残す。** イベントが主、巡回は監視プロセスが
+   死んだときの備え。二重対応は「巡回側は状態を確認して、変化がなければすぐ
+   切り上げる」ことで避ける
 
 ## 運用
 
-- **PR リスト変更時**(merge 完了・新 PR): Monitor task を止めて新引数で再 arm —
-  Monitor の引数は動的に変えられない
-- **停止**: TaskList で task ID を確認して TaskStop
-- イベント受信後: artifact/pane を実物検証 → tracker 更新 → successor 起床。
-  **通知は「見ろ」であって「信じろ」ではない** — 必ず自分で pane/receipt を読む
+- **PR の監視対象を変えたいとき**(マージ完了・新しい PR の追加): Monitor の
+  タスクを止めて、新しい引数で立て直す。動いている Monitor の引数は変えられない
+- **止めたいとき**: TaskList でタスク ID を確認して TaskStop
+- イベントを受けたら: 成果物や pane の実物を確認 → tracker を更新 → 次の作業を
+  起こす。**通知は「見に行け」の合図であって、「信じろ」ではない** — 必ず自分の
+  目で pane と receipt を読む
 
-## 罠(すべて本番実測)
+## 落とし穴(すべて実際に踏んだもの)
 
-- `herdr pane list` は agent 未起動 pane のラベルを返さないことがある →
-  ラベル無し pane は監視に映らない。lane 作成時に必ずラベルを付ける
+- `herdr pane list` は、エージェントが起動していない pane のラベルを返さないことが
+  ある → ラベルのない pane は監視に映らない。lane を立てたら必ずラベルを付けること
   (issue-lane の二層ラベル規則)
-- 1 watcher に大量の PR を積むと gh rate limit に当たる。「いま判定待ちの PR」
+- 1本の監視に PR を積みすぎると gh のレート制限に当たる。「いままさに判定待ちの PR」
   だけに絞る
-- Monitor スクリプト内の `sleep` は可。フォアグラウンドの裸 `sleep` 連鎖は
-  harness にブロックされがち
-- **`done` は transient — poll の隙間に消える**(2件実測)。worker の done は
-  queued メッセージの消費で poll 間に消えうる。状態サンプリングは原理的に
-  取りこぼす。対策は組み込み済み: `--inbox` で耐久 artifact(terminal receipt /
-  verdict)を primary にする — ファイルは消えない。LANE watch は backstop に
-  留め、worker には「receipt を inbox に書いてから park」の順序を守らせる
-- **再 arm の隙間**: 再起動時に inbox 基準線を引き直すため、停止中の到着分は
-  emit されない。再 arm 直後に必ず手動 sweep(`ls -t`)
+- Monitor に渡すスクリプトの中の `sleep` は問題ない。ただしフォアグラウンドの
+  シェルで裸の `sleep` を連発するのはハーネスに止められがち
+- **`done` は一瞬で消えることがある**(実測2件)。worker の done は、キューに
+  溜まっていた次の指示が届いた瞬間に working へ戻る — ポーリングの隙間に落ちる。
+  状態のサンプリングは原理的に取りこぼすものだ。対策はスクリプトに組み込み済み:
+  `--inbox` で成果物ファイルの到着を主信号にする。ファイルは状態と違って消えない。
+  LANE の監視は停滞検出の保険に徹し、worker には「receipt を inbox に置いて**から**
+  待機する」順番を守らせる
+- **立て直しの隙間**: 監視を再起動すると inbox の基準線が引き直される。止まって
+  いた間に届いたファイルは通知されないので、再開直後に必ず手で確認する(`ls -t`)

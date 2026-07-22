@@ -12,14 +12,24 @@ implementation to worker lanes:
 
 ## Why — the problem and the solution
 
-**Problem: putting a frontier model on everything is expensive.** A single
+**Problem 1: putting a frontier model on everything is expensive.** A single
 strong session that plans, implements, and reviews burns top-tier tokens
 mostly on mechanical work — and implementation is the bulk of the tokens.
 Worse, without structure the strong model quietly stays on for work that a
 cheaper model does just as well (we measured exactly this drift in
 production: boosted lanes carried an expensive model into unrelated issues).
 
-**Solution: separate judgment from execution.**
+**Problem 2: the AI tooling landscape is drowning in new platforms.** Every
+week brings another orchestration framework to adopt, learn, and depend on.
+But supervising an agent fleet does not require any of them. Give your agents
+a loop and a goal, and existing simple tools — a pane multiplexer, the issue
+tracker you already use, `gh`, a few small single-purpose shell scripts —
+compose into the same capability. This repo is deliberately Unix-philosophy:
+**no new platform, no runtime dependency** — just markdown skill files and
+small scripts that glue together tools you already run.
+
+**Solution: separate judgment from execution, using nothing but what you
+already have.**
 
 | Role | Model tier | Token share | What it does |
 |---|---|---|---|
