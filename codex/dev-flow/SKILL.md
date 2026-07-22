@@ -44,6 +44,16 @@ so designs cannot close over an imagined environment.
 - **Produce your receipt before parking.** Path + SHA. Work without a receipt
   does not exist.
 
+## Who runs what (when using a worker fleet)
+
+- Implementation-heavy stages (3-5, 7) go to workers on the fleet standard
+  gear — Codex lanes: `gpt-5.6-terra` medium; Claude Code lanes: **`sonnet`**
+  as the default implementer.
+- Higher gear (Codex `sol` effort low; Claude Code `opus`) is
+  ledger-controlled boost/spot-review only — never resident.
+- Stage 6 (live) is a human gate: the owner or an explicitly authorized
+  executor, not a model.
+
 ## Circuit breaker
 
 Count progress in outcomes (real mutations, readbacks, remaining stages), not

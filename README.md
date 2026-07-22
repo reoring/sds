@@ -16,6 +16,11 @@ implementation to worker lanes:
 | [issue-lane](claude/issue-lane/SKILL.md) | 1 issue = 1 lane lifecycle: issue-ID labels on both tab and pane, teardown on issue close, ledger-controlled model boosts, three-way drift audit (tab × pane × tracker). |
 | [herdr-event-watch](claude/herdr-event-watch/SKILL.md) | Event-driven fleet supervision: durable inbox artifacts (primary), lane done/blocked transitions (backstop), PR required-check finalizations — instead of fixed-interval polling. |
 
+Worker lanes may be **Codex or Claude Code agents** — default implementers:
+Codex `gpt-5.6-terra` (medium), Claude Code `sonnet`; higher tiers (Codex
+`sol`, Claude Code `opus`) are ledger-controlled boosts only. Issue trackers:
+**Linear, Jira** (both use `ABC-123`-style keys), and GitHub Issues.
+
 Each skill exists in two runtime variants:
 
 - `claude/` — for Claude Code (`~/.claude/skills/`); uses the Monitor tool for

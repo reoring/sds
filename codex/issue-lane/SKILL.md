@@ -14,9 +14,11 @@ description: "1 issue = 1 lane" lifecycle discipline for herdr pane fleets. Use 
 2. **A lane lives exactly as long as its issue.** Created at assignment, torn
    down at Done/Canceled. Never reuse a lane for the next issue — fresh lane,
    fresh model gear, fresh history, fresh worktree.
-3. **Model = fleet standard gear by default** (e.g. `gpt-5.6-terra` medium;
-   boost gear effort low). A higher gear is legitimate only while the fleet's
-   model ledger holds an open entry for this lane.
+3. **Model = fleet standard gear by default.** Lanes may be Codex or Claude
+   Code agents — default implementers: Codex `gpt-5.6-terra` (medium; boost
+   gear `sol`, effort low), Claude Code **`sonnet`** (boost tier e.g. `opus`).
+   A higher gear is legitimate only while the fleet's model ledger holds an
+   open entry for this lane.
 4. **No lane registry file.** Truth = live `herdr pane list` + the issue
    tracker, cross-checked. A registry would be a second, drifting authority.
 
@@ -38,14 +40,17 @@ description: "1 issue = 1 lane" lifecycle discipline for herdr pane fleets. Use 
 
 1. Duplicate check: does any pane already carry this issue ID? If yes, message
    that pane instead of creating a new lane.
-2. Create the lane with the fleet bootstrap procedure; pass the model
-   explicitly; tab label starts with the issue ID.
+2. Create the lane with the fleet bootstrap procedure; choose the agent
+   runtime (Codex or Claude Code) and pass the model explicitly (Codex:
+   `gpt-5.6-terra`; Claude Code: `sonnet`); tab label starts with the issue ID.
 3. Kickoff must state: "This lane is dedicated to <ISSUE-ID>. On completion,
    stop background terminals, then park. No other issue work."
 
 ### Close (issue closed → teardown)
 
-Trigger on **tracker-measured** Done/Canceled (never on lane self-report):
+Trigger on **tracker-measured** Done/Canceled — Linear (MCP `get_issue`),
+Jira (CLI/MCP; `PROJ-123`-style keys follow the same `ABC-123` pattern), or
+GitHub Issues (`gh issue view`) — never on lane self-report:
 verify no background processes survive (check shared-lock holders; stale-check
 before killing), remove worktree/branch, **close** the pane (no
 rename-and-reuse), close any open model-ledger entry.
@@ -63,7 +68,7 @@ layer, and both vs tracker state. Measure models from pane footers.
 | Orphan (no issue ID on either layer) | ask owner; close if unclaimed next sweep |
 | Zombie (issue closed, lane alive) | teardown → close now |
 | Duplicate writer (same issue, 2+ panes) | stop the later one |
-| Unledgered boost | demote with `scripts/model-switch.sh` (menu measured, fail-closed); notify owner |
+| Unledgered boost | demote — Codex panes: `scripts/model-switch.sh` (menu measured, fail-closed); Claude Code panes: its `/model` picker with the same discipline. Notify owner |
 | Reuse drift (layers disagree / tab names closed issue) | identify real work; park → teardown; fresh lane for the next issue |
 | In-progress issue with no lane | report to owner (do not assign on their behalf) |
 

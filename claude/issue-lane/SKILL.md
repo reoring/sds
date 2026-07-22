@@ -32,10 +32,11 @@ actually in progress" — management returns to measurement.
    down when the issue reaches Done/Canceled. "Reuse for the next issue" is
    forbidden — the next issue gets a fresh lane (model, history, and worktree
    start clean).
-3. **Model = fleet standard gear by default** (example: `gpt-5.6-terra`
-   medium; boost gear effort low). Running on a higher gear is allowed only
-   while a model ledger has an open entry for the lane. Unledgered high gear
-   is demoted on sight.
+3. **Model = fleet standard gear by default.** Lanes may be Codex or Claude
+   Code agents — default implementers: Codex `gpt-5.6-terra` (medium; boost
+   gear `sol`, effort low), Claude Code **`sonnet`** (boost tier e.g. `opus`).
+   Running on a higher gear is allowed only while a model ledger has an open
+   entry for the lane. Unledgered high gear is demoted on sight.
 4. **No lane registry file.** The source of truth is `herdr pane list` (live)
    cross-checked with the issue tracker. A registry file would become a
    second, drifting authority.
@@ -44,8 +45,10 @@ actually in progress" — management returns to measurement.
 
 1. **Duplicate check**: `herdr pane list` for the target workspace — if a pane
    already carries this issue ID, do not create another; message that pane.
-2. **Create** via your fleet's lane-bootstrap procedure. Pass the model
-   explicitly (never rely on defaults). Tab label starts with the issue ID.
+2. **Create** via your fleet's lane-bootstrap procedure. Choose the agent
+   runtime per lane (Codex or Claude Code) and pass the model explicitly —
+   never rely on defaults (Codex: `gpt-5.6-terra`; Claude Code: `sonnet`).
+   Tab label starts with the issue ID.
 3. **Kickoff message** (sent to the pane ID) must include:
 
    > This lane is dedicated to <ISSUE-ID>. On completion, stop all background
@@ -53,8 +56,10 @@ actually in progress" — management returns to measurement.
 
 ## Close (issue closed → lane teardown)
 
-Trigger: PR merged + issue Done/Canceled **measured in the tracker** (Linear
-MCP `get_issue`, `gh issue view`, etc.) — never on the lane's self-report.
+Trigger: PR merged + issue Done/Canceled **measured in the tracker** — never
+on the lane's self-report. Works with any tracker: Linear (MCP `get_issue`),
+Jira (CLI/MCP; issue keys like `PROJ-123` follow the same `ABC-123` pattern),
+or GitHub Issues (`gh issue view`).
 
 1. Confirm issue state in the tracker.
 2. Teardown safely: verify no background processes remain (especially holders
@@ -73,6 +78,8 @@ left its only trace on the tab layer.
    `herdr pane list`, joined on `tab_id`.
 2. Extract issue IDs from tab label and pane label; cross-check (a) the two
    layers against each other and (b) against the tracker state (three-way).
+   The `ABC-123` key pattern covers both Linear and Jira; for GitHub Issues
+   use `#<n>` / `owner/repo#<n>`.
 3. Measure the model from the pane footer:
    ```bash
    herdr pane read <pane> --source visible --lines 3 --format text | tail -1
@@ -84,7 +91,7 @@ left its only trace on the tab layer.
 | Orphan lane | no issue ID on either label layer | ask the owning PO; close if still unclaimed next sweep |
 | Zombie lane | issue Done/Canceled but pane alive | teardown → close immediately |
 | Duplicate writer | same issue ID on 2+ panes | stop the later one; consolidate into the first |
-| Unledgered boost | footer shows high gear, no open ledger entry | demote via `scripts/model-switch.sh` (fail-closed; no blind menu numbers), notify the owning PO |
+| Unledgered boost | footer shows high gear, no open ledger entry | demote — Codex panes: `scripts/model-switch.sh` (fail-closed; no blind menu numbers); Claude Code panes: its `/model` picker with the same measured-menu + verify discipline. Notify the owning PO |
 | Reuse drift | tab and pane disagree, or tab names a closed issue | identify the real work item; if working, wait for park → teardown; next issue gets a fresh lane |
 | Unassigned work | issue In Progress with no lane | report to the owning PO (do not create lanes on their behalf) |
 

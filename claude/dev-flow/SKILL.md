@@ -80,8 +80,9 @@ something upstream is. Find the rollback target instead.
 ## Who runs what (when using a worker fleet)
 
 - Implementation-heavy stages (3-5, 7) go to workers on the **fleet standard
-  gear** (example: `gpt-5.6-terra` medium on a Codex fleet).
-- Higher gear (e.g. `sol`, effort low by default) is reserved for
+  gear** (examples: `gpt-5.6-terra` medium on a Codex fleet; **`sonnet`** as
+  the default implementer on a Claude Code fleet).
+- Higher gear (Codex `sol` effort low; Claude Code `opus`) is reserved for
   "stuck-breakthrough" boosts and blocking spot reviews, **ledger-controlled**
   (see a model-gear ledger convention) — never resident.
 - Stage 6 (live) is a **human gate**: the owner or an explicitly authorized
