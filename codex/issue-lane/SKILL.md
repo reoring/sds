@@ -15,7 +15,12 @@ description: "1 issue = 1 lane" lifecycle discipline for herdr pane fleets. Use 
    drift**. Resident PO panes (tab label `po`) are exempt.
 2. **A lane lives exactly as long as its issue.** Created at assignment, torn
    down at Done/Canceled. Never reuse a lane for the next issue — fresh lane,
-   fresh model gear, fresh history, fresh worktree.
+   fresh model gear, fresh history, fresh worktree. Rotating to a **fresh
+   session mid-issue is not reuse but recommended hygiene**: state lives in
+   receipts / PRs / the tracker, so sessions are disposable, and long
+   token-heavy sessions degrade (declaration stalls, hollow output). "1 issue
+   = 1 lane" means one at a time; serial replacement on the same issue is
+   fine — and a free refresh comes before a paid model boost.
 3. **Model = fleet standard gear by default.** Lanes may be Codex or Claude
    Code agents — default implementers: Codex `gpt-5.6-terra` (medium; boost
    gear `sol`, effort low), Claude Code **`sonnet`** (boost tier e.g. `opus`).

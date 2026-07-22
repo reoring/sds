@@ -16,7 +16,11 @@
    PO の常駐 pane(tab ラベル `po`)だけは対象外
 2. **lane の寿命は issue と同じ。** 割り当てで生まれ、Done/Canceled で畳む。
    次の issue への使い回しは禁止 — 新しい lane を、まっさらなモデル・履歴・
-   worktree で立てる
+   worktree で立てる。逆に、**同じ issue の途中の session 立て直しは使い回しでは
+   なく推奨**: 状態は receipt・PR・tracker にあるので session は使い捨てでよく、
+   長生きした session は劣化する(計画宣言だけで手が動かない、中身のない実装)。
+   「1 issue = 1 lane」は「同時に1本」の意味 — 直列の世代交代は違反ではない。
+   劣化したら、有料のモデル昇格の前にまず無料の立て直しを
 3. **モデルは fleet の標準を使う。** lane は Codex でも Claude Code でもよい。
    標準の実装担当: Codex は `gpt-5.6-terra`(medium。ブースト用 `sol` は
    effort low が基本)、Claude Code は **`sonnet`**(ブースト層は `opus` など)。

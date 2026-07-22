@@ -34,7 +34,14 @@ lane を issue と1対1に縛れば、`pane list` がそのまま「いま何が
    この規則の対象外
 2. **lane の寿命は issue と同じ。** 割り当てと同時に生まれ、Done/Canceled に
    なったら畳む。「次の issue にそのまま使う」は禁止 — 次の issue には新しい lane を
-   立てる(モデルも履歴も worktree もまっさらから)
+   立てる(モデルも履歴も worktree もまっさらから)。逆に、**同じ issue の途中で
+   session を新しくするのは使い回しではなく、推奨される衛生管理**: lane の状態は
+   receipt・PR・tracker に残っているので、session そのものは使い捨てでいい。
+   長生きして token が積もった session は劣化する(計画を宣言するだけで手が
+   動かなくなる、中身のない実装を出す — input 116M tokens まで育った lane を実測)。
+   「1 issue = 1 lane」は「**同時に**1本」の意味で、同じ issue での直列の世代交代は
+   規律違反ではない。劣化の兆候が出たら、有料のモデル昇格の前に、まず無料の
+   session 立て直しを試すこと
 3. **モデルは fleet の標準を使う。** lane は Codex でも Claude Code でもよい。
    標準の実装担当は Codex なら `gpt-5.6-terra`(medium。ブースト用の `sol` は
    effort low が基本)、Claude Code なら **`sonnet`**(ブースト層は `opus` など)。

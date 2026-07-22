@@ -33,7 +33,13 @@ actually in progress" — management returns to measurement.
 2. **A lane lives exactly as long as its issue.** Born at assignment, torn
    down when the issue reaches Done/Canceled. "Reuse for the next issue" is
    forbidden — the next issue gets a fresh lane (model, history, and worktree
-   start clean).
+   start clean). The inverse — **rotating to a fresh session mid-issue — is
+   not reuse but recommended hygiene**: a lane's state lives in receipts, PRs,
+   and the tracker, so sessions are disposable. Long-lived, token-heavy
+   sessions degrade (declaration stalls, hollow output; we measured a lane
+   grown to 116M input tokens). "1 issue = 1 lane" means one **at a time** —
+   serial generational replacement on the same issue is fine. When a session
+   shows degradation, try a free refresh before a paid model boost.
 3. **Model = fleet standard gear by default.** Lanes may be Codex or Claude
    Code agents — default implementers: Codex `gpt-5.6-terra` (medium; boost
    gear `sol`, effort low), Claude Code **`sonnet`** (boost tier e.g. `opus`).
