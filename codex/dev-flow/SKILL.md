@@ -45,6 +45,25 @@ so designs cannot close over an imagined environment.
   stage-4 packet, refuse and report.
 - **Produce your receipt before parking.** Path + SHA. Work without a receipt
   does not exist.
+- **Never satisfy a test with a stub.** Turning tests green with a skeleton
+  implementation is a protocol defect: review adds a held-out test you never
+  saw, a stub cannot pass it, and the work is redone. If the real
+  implementation keeps defeating you, report that you are stuck — the
+  supervisor escalates gear via the ledger. Stubbing is never the answer.
+- **Never edit the tests you were given.** When tests are owned by another
+  lane (contract-test-first), any test diff from you is an instant rejection.
+
+## Hollow-green defenses (for supervisors)
+
+"Green" is a proxy metric and workers can optimize it literally. Defend in
+three layers: (1) tests written and owned by a separate, stronger lane —
+implementer turns them green, never edits them; (2) merge gate requires green
+on a real-boundary harness — fake-client green is PoC evidence only; (3) one
+held-out test at review. A second hollow-green from the same lane is a
+circuit-breaker event: change the method (contract-test-first / boost /
+re-slice) instead of retrying. And when adopting a test gate, verify an honest
+implementation can actually go green in it — an impossible gate induces
+fabrication.
 
 ## Who runs what (when using a worker fleet)
 

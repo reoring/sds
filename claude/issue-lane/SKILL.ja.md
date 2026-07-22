@@ -55,6 +55,9 @@ lane を issue と1対1に縛れば、`pane list` がそのまま「いま何が
 
    > この lane は <ISSUE-ID> 専任。完了したらバックグラウンドのプロセスをすべて
    > 止めてから、待機して報告すること。ほかの issue には手を出さない。
+   > test を弱める・skeleton 実装で green を満たすのは手順違反 — あなたが
+   > 見ていない held-out test で検出され、やり直しになる。test には diff を
+   > 当てないこと。
 
 ## 撤収(issue クローズ → lane を畳む)
 

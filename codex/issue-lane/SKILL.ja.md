@@ -45,7 +45,9 @@
    選び、モデルを明示する(Codex: `gpt-5.6-terra`、Claude Code: `sonnet`)。
    tab ラベルは issue ID で始める
 3. 着手指示に明記する: 「この lane は <ISSUE-ID> 専任。完了したらバックグラウンドの
-   プロセスを止めてから待機。ほかの issue には手を出さない」
+   プロセスを止めてから待機。ほかの issue には手を出さない。test を弱める・
+   skeleton で green を満たすのは手順違反 — held-out test で検出される。
+   test には diff を当てない」
 
 ### 撤収(issue クローズ → lane を畳む)
 

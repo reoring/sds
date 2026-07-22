@@ -44,6 +44,32 @@ Absolute rules per stage:
 - **Observability is designed in stage 2.** Bolting on observation after going
   live is a design defect, not an operations task.
 
+## Hollow-green defenses (stage 5)
+
+A worker can satisfy tests with a skeleton: "green" is a proxy metric, and
+cheaper models optimize the proxy literally (we caught this repeatedly in
+production). Defenses, all battle-tested:
+
+- **Test ownership separation (contract-test-first).** RED tests are written
+  and owned by a different, stronger lane, on the production path, failing for
+  real; the implementer's only job is to turn them green. **Any implementer
+  diff to the tests = instant rejection.**
+- **Real-boundary green.** Fake-client / pure-unit green counts only as
+  stage-3 (PoC) evidence; the stage-5 merge gate requires green on a
+  real-boundary harness (e.g. a real API server). A fake environment cannot
+  tell an honest implementation from a hollow one — this is a structural
+  ceiling, not a diligence issue.
+- **Held-out test.** At review, add and run one test the implementer never
+  saw. A skeleton fails it; an implementation of the spec passes. One line in
+  the review procedure, and the cheapest strong detector.
+- **Second hollow-green from the same lane is a circuit-breaker event.** Stop
+  and change the method — switch to contract-test-first, apply a
+  ledger-controlled boost, or re-slice the issue. It signals oversized scope,
+  a broken gate, or insufficient gear, not laziness.
+- **Gates must allow honest green.** When reviewing a test gate (stage 2),
+  check that a truthful implementation can actually pass in the gate's
+  environment — a gate where honest green is impossible induces fabrication.
+
 ## State file
 
 One file per effort: `flow/<topic>-flow.md` in the working directory. This is

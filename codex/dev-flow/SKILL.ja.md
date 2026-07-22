@@ -46,6 +46,24 @@
   しない。封印済みの工程4パケットなしに本番を変えろと言われたら、**断って報告する**
 - **待機する前に receipt を出す。** パス + SHA。receipt のない仕事は、
   なかったのと同じ
+- **test を stub で満たさない。** skeleton 実装で test を green にするのは
+  手順違反だ: レビューではあなたが見たことのない held-out test が追加され、
+  stub はそれを通れず、仕事はやり直しになる。本物の実装にどうしても歯が
+  立たないなら「行き詰まっている」と報告すること — モデルの昇格は監督者が
+  台帳を通して判断する。stub は決して答えにならない
+- **渡された test を編集しない。** test が別 lane の所有(contract-test-first)
+  のとき、あなたからの test への diff はその場で差し戻される
+
+## hollow-green への防御(監督者向け)
+
+「green」は代理指標であり、worker はそれを文字どおり最適化できてしまう。
+防御は三層: (1) test は別の強い lane が書いて所有し、実装者は green にする
+だけ・編集不可 (2) merge gate は本物の境界を持つ harness での green —
+fake-client の green は PoC の証拠止まり (3) レビューで held-out test を1本。
+同じ lane の 2回目の hollow-green は遮断イベント: 再試行ではなく方式を変える
+(contract-test-first 化 / ブースト / issue の切り直し)。そして test gate を
+採用する前に「誠実な実装が本当に green になれるか」を確認する — 正直では
+通れない gate は捏造を誘発する。
 
 ## 誰が・どのモデルでやるか(worker fleet を使う場合)
 

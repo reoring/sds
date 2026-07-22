@@ -55,6 +55,9 @@ actually in progress" — management returns to measurement.
 
    > This lane is dedicated to <ISSUE-ID>. On completion, stop all background
    > terminals, then park and report. Do not work on any other issue.
+   > Weakening tests or satisfying them with a skeleton implementation is a
+   > protocol defect — a held-out test you have not seen will catch it and
+   > the work will be redone. Do not diff the tests.
 
 ## Close (issue closed → lane teardown)
 

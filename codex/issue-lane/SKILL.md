@@ -46,7 +46,9 @@ description: "1 issue = 1 lane" lifecycle discipline for herdr pane fleets. Use 
    runtime (Codex or Claude Code) and pass the model explicitly (Codex:
    `gpt-5.6-terra`; Claude Code: `sonnet`); tab label starts with the issue ID.
 3. Kickoff must state: "This lane is dedicated to <ISSUE-ID>. On completion,
-   stop background terminals, then park. No other issue work."
+   stop background terminals, then park. No other issue work. Weakening tests
+   or satisfying them with a skeleton is a protocol defect — a held-out test
+   will catch it. Do not diff the tests."
 
 ### Close (issue closed → teardown)
 
