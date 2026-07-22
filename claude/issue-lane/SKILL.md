@@ -5,6 +5,8 @@ description: "1 issue = 1 lane" lifecycle discipline for herdr-managed agent fle
 
 # issue-lane — 1 issue = 1 lane lifecycle discipline
 
+**English** | [日本語](SKILL.ja.md)
+
 Lane creation, teardown, and model escalation each have their own canonical
 procedures (bootstrap / teardown / model-gear conventions of your fleet). This
 skill binds them to the **issue lifecycle** and provides **drift detection**.

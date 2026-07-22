@@ -5,6 +5,8 @@ description: "1 issue = 1 lane" lifecycle discipline for herdr pane fleets. Use 
 
 # issue-lane — 1 issue = 1 lane lifecycle discipline
 
+**English** | [日本語](SKILL.ja.md)
+
 ## Invariants (4)
 
 1. **1 issue = 1 lane = 1 writer.** The issue ID appears on **both label

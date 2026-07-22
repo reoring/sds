@@ -5,6 +5,8 @@ description: Switch herdr fleet supervision from fixed-interval patrols to event
 
 # herdr-event-watch — event-driven lane/PR watching
 
+**English** | [日本語](SKILL.ja.md)
+
 Canonical procedure for getting notified **the moment something changes**
 instead of polling on a fixed interval. Fixed-interval patrol loses twice: a
 lane that parks 3 minutes in goes unnoticed for up to the full interval, and

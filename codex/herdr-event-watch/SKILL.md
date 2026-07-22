@@ -5,6 +5,8 @@ description: Event-driven watching of herdr lanes, durable inbox artifacts, and 
 
 # herdr-event-watch — event-driven lane/PR watching
 
+**English** | [日本語](SKILL.ja.md)
+
 Get notified the moment something changes instead of polling on a schedule.
 Fixed-interval patrol loses twice: a lane that parks 3 minutes in goes
 unnoticed for up to the full interval, and the patrol burns turns even when

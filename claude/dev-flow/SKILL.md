@@ -5,6 +5,8 @@ description: Staged development flow discipline — concept → read-only scout 
 
 # dev-flow — staged development flow
 
+**English** | [日本語](SKILL.ja.md)
+
 ## Principle (one line)
 
 **Move contact with reality to the cheapest possible stage.** Expensive steps
