@@ -45,8 +45,51 @@ for the volume.
 
 Worker lanes may be **Codex or Claude Code agents** — default implementers:
 Codex `gpt-5.6-terra` (medium), Claude Code `sonnet`; higher tiers (Codex
-`sol`, Claude Code `opus`) are ledger-controlled boosts only. Issue trackers:
-**Linear, Jira** (both use `ABC-123`-style keys), and GitHub Issues.
+`sol`, Claude Code `opus`) are ledger-controlled boosts only.
+
+## Issue tracking — works with Linear and Jira
+
+The whole issue lifecycle runs on your existing tracker — **Linear or Jira**
+work out of the box (GitHub Issues too):
+
+- The PO files and updates issues in the tracker (Linear via MCP, Jira via
+  CLI/MCP, GitHub via `gh`).
+- Lane labels carry the tracker's issue key; Linear and Jira share the same
+  `ABC-123` key pattern, so the two-layer label rule and the audit's
+  extraction logic are identical for both.
+- Lifecycle triggers are **tracker-measured**: a lane is torn down when the
+  tracker says Done/Canceled — never on the lane's self-report.
+
+## The workflow, end to end
+
+How the three skills compose into one delivery loop (this is the workflow the
+repo was distilled from — an MVP taken from planning to a live deployment):
+
+1. **Bootstrap.** Create the `<project>` PO space (Claude Code on Opus 4.8 /
+   Fable 5, tab `po`) and the `<project>-impl` worker space.
+2. **Plan — dev-flow stages 0–2.** The PO writes the concept memo, dispatches
+   a read-only scout lane, then designs against the scout receipt and routes
+   an independent review. No design without ground truth.
+3. **File issues.** The PO breaks the reviewed design into tracker issues
+   (Linear / Jira) — each one lane-sized, with acceptance criteria and the
+   receipt it must produce, wired with blocking dependencies.
+4. **Assign — issue-lane.** For every unblocked issue, spawn one lane in
+   `<project>-impl` (tab = issue key, pane = `<project>/<KEY>`, model =
+   `sonnet` / `terra` medium) and send the kickoff with the dedication clause.
+5. **Supervise — herdr-event-watch.** Arm one watcher over lanes + receipt
+   inbox + PR checks. The PO reacts to events instead of polling: INBOX →
+   verify the receipt for real; CI pass → merge decision; LANE blocked →
+   intervene. Stuck lane? Boost it via the model ledger, demote on
+   breakthrough.
+6. **Close the loop.** Tracker says Done → tear the lane down (issue-lane);
+   file follow-up issues as reviews surface them.
+7. **Ship — dev-flow stages 4–8.** Certify the full chain in isolation, apply
+   to live manually through the human gate, observe (readback + soak), then
+   confirm and feed the lessons back into the flow doc.
+
+The PO never implements; workers never touch live. Every hand-off is a
+receipt, every state change is measured, and the expensive model only shows up
+where judgment happens.
 
 ## Fleet topology (herdr lane operation)
 
