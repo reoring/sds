@@ -181,8 +181,8 @@ to develop **AppThrust** ([appthrust.com](https://appthrust.com/) ·
 fleets daily across planning, implementation, review, and live releases.
 
 Measured effect: adopting this PO/worker split with ledger-controlled boosts
-cut our token costs by **roughly 60%**, with frontier-model quality retained
-at the decision points.
+cut our token spend from **about $12,000/day to about $900/day — a ~92%
+reduction** — with frontier-model quality retained at the decision points.
 
 ## License
 
