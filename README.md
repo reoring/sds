@@ -52,6 +52,7 @@ for the volume.
 | [dev-flow](claude/dev-flow/SKILL.md) | Staged flow: concept → read-only scout → design → PoC → certify → implement → manual live apply → observe → confirm. Per-stage receipts, fail-closed gates, rollback table, circuit breaker. |
 | [issue-lane](claude/issue-lane/SKILL.md) | 1 issue = 1 lane lifecycle: issue-ID labels on both tab and pane, teardown on issue close, ledger-controlled model boosts, three-way drift audit (tab × pane × tracker). |
 | [herdr-event-watch](claude/herdr-event-watch/SKILL.md) | Event-driven fleet supervision: durable inbox artifacts (primary), lane done/blocked transitions (backstop), PR required-check finalizations — instead of fixed-interval polling. |
+| [po-handover](claude/po-handover/SKILL.md) / [po-resume](claude/po-resume/SKILL.md) | PO session rotation (Claude Code only — POs run on Claude Code in this topology). Rotate at 50-60% context: the handover file is a map (in-flight deltas + pointers), the resuming session re-measures everything live, re-arms watchers, and loads the standard toolkit before working. |
 
 Worker lanes may be **Codex or Claude Code agents** — default implementers:
 Codex `gpt-5.6-terra` (medium), Claude Code `sonnet`; higher tiers (Codex
@@ -120,7 +121,9 @@ herdr
   issues, assigns lanes with issue-lane, and supervises with
   herdr-event-watch. It lives in the project's own space under a tab labeled
   `po` (exempt from the issue-ID label rule) and never implements — it
-  dispatches, verifies receipts, and adjudicates.
+  dispatches, verifies receipts, and adjudicates. PO sessions are disposable
+  too: rotate at ~50-60% context via **po-handover → po-resume**, before
+  judgment degrades.
 - **One `<project>-impl` space for workers.** Every issue gets its own tab;
   the tab label starts with the issue ID, and the agent pane label is
   `<project>/<ISSUE-ID>[-role]` (the two-layer rule that makes reuse drift
