@@ -163,6 +163,17 @@ are expected on PATH where the scripts are used.
 - **Events primary, polling as backstop.** Durable artifacts cannot be missed;
   sampled states can — the design uses both accordingly.
 
+## Used in production
+
+These skills are not a thought experiment — they are the actual workflow used
+to develop **AppThrust** ([appthrust.com](https://appthrust.com/) ·
+[github.com/appthrust](https://github.com/appthrust/)), running multi-agent
+fleets daily across planning, implementation, review, and live releases.
+
+Measured effect: adopting this PO/worker split with ledger-controlled boosts
+cut our token costs by **roughly 60%**, with frontier-model quality retained
+at the decision points.
+
 ## License
 
 MIT

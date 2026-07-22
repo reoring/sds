@@ -154,6 +154,17 @@ cp -r codex/* ~/.codex/skills/
 - **イベントが primary、ポーリングは backstop。** 耐久 artifact は取りこぼさない。
   サンプリングされる状態は取りこぼす — 設計はその両方を前提に組む
 
+## 実運用実績
+
+このスキル群は机上の実験じゃなく、**AppThrust**
+([appthrust.com](https://appthrust.com/) ·
+[github.com/appthrust](https://github.com/appthrust/))の実際の開発で
+使っているワークフローそのもの。計画・実装・レビュー・live リリースまで、
+マルチエージェント fleet で日々回している。
+
+実測効果: この PO/worker 分離 + 台帳制ブーストの導入で、トークン費用を
+**約 60% 削減**できた(判断点の frontier モデル品質は維持したまま)。
+
 ## ライセンス
 
 MIT
