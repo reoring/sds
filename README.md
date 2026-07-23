@@ -10,6 +10,39 @@ implementation to worker lanes:
 > plan with **dev-flow** → assign each issue to exactly one lane with
 > **issue-lane** → supervise event-driven with **herdr-event-watch**.
 
+## Install
+
+**Claude Code — as a plugin (recommended):**
+
+```
+/plugin marketplace add reoring/sds
+/plugin install sds@sds
+```
+
+Skills load namespaced (`/sds:dev-flow`, `/sds:issue-lane`, …) and update via
+`/plugin marketplace update sds`.
+
+**Both runtimes — one-shot npx installer:**
+
+```bash
+npx @reoring/sds            # install both (claude + codex)
+npx @reoring/sds --codex    # Codex CLI skills only -> ~/.codex/skills/
+npx @reoring/sds --claude   # Claude Code skills only -> ~/.claude/skills/
+```
+
+Fail-closed: existing skill directories are never overwritten without
+`--force`. `--dry-run` previews.
+
+**Manual fallback:**
+
+```bash
+cp -r claude/* ~/.claude/skills/
+cp -r codex/* ~/.codex/skills/
+```
+
+Skills are self-contained; `herdr` (pane fleet CLI), `gh`, `jq`, and `python3`
+are expected on PATH where the scripts are used.
+
 ## Why — the problem and the solution
 
 **Problem 1: putting a frontier model on everything is expensive.** A single
@@ -155,39 +188,6 @@ Bundled scripts (battle-tested, fail-closed):
   panes: reads the actual picker menu, derives the option number from an exact
   name match, verifies the footer afterwards. Born from a real misfire where a
   blind menu-number press selected a legacy model.
-
-## Install
-
-**Claude Code — as a plugin (recommended):**
-
-```
-/plugin marketplace add reoring/sds
-/plugin install sds@sds
-```
-
-Skills load namespaced (`/sds:dev-flow`, `/sds:issue-lane`, …) and update via
-`/plugin marketplace update sds`.
-
-**Both runtimes — one-shot npx installer:**
-
-```bash
-npx @reoring/sds            # install both (claude + codex)
-npx @reoring/sds --codex    # Codex CLI skills only -> ~/.codex/skills/
-npx @reoring/sds --claude   # Claude Code skills only -> ~/.claude/skills/
-```
-
-Fail-closed: existing skill directories are never overwritten without
-`--force`. `--dry-run` previews.
-
-**Manual fallback:**
-
-```bash
-cp -r claude/* ~/.claude/skills/
-cp -r codex/* ~/.codex/skills/
-```
-
-Skills are self-contained; `herdr` (pane fleet CLI), `gh`, `jq`, and `python3`
-are expected on PATH where the scripts are used.
 
 ## Design notes
 

@@ -12,6 +12,39 @@ Claude Code でも Codex でも使える。
 > **dev-flow** で計画を立て、**issue-lane** で issue ごとに lane を1本立てて任せ、
 > **herdr-event-watch** でイベント駆動に見守る。
 
+## インストール
+
+**Claude Code — plugin として(推奨):**
+
+```
+/plugin marketplace add reoring/sds
+/plugin install sds@sds
+```
+
+スキルは名前空間つきで読み込まれ(`/sds:dev-flow`、`/sds:issue-lane`、…)、
+更新は `/plugin marketplace update sds` で取り込める。
+
+**両ランタイム一括 — npx で一発:**
+
+```bash
+npx @reoring/sds            # claude + codex の両方を入れる
+npx @reoring/sds --codex    # Codex CLI 分だけ -> ~/.codex/skills/
+npx @reoring/sds --claude   # Claude Code 分だけ -> ~/.claude/skills/
+```
+
+fail-closed 設計: 既存のスキルディレクトリは `--force` なしでは上書きしない。
+`--dry-run` で事前確認できる。
+
+**手動(fallback):**
+
+```bash
+cp -r claude/* ~/.claude/skills/
+cp -r codex/* ~/.codex/skills/
+```
+
+スキルは自己完結している。スクリプトを使う環境には `herdr`(pane fleet の CLI)、
+`gh`、`jq`、`python3` が PATH にあること。
+
 ## なぜ作ったか — 課題と解決
 
 **課題その1: 何もかも最上位モデルにやらせると、コストがもたない。**
@@ -155,39 +188,6 @@ herdr
   実際のピッカー画面を読み、モデル名の完全一致から選択番号を割り出し、切り替え後に
   画面のフッターで検証する。「番号の思い込み押し」で旧世代モデルに誤切替した実事故を
   二度と起こさないために生まれた
-
-## インストール
-
-**Claude Code — plugin として(推奨):**
-
-```
-/plugin marketplace add reoring/sds
-/plugin install sds@sds
-```
-
-スキルは名前空間つきで読み込まれ(`/sds:dev-flow`、`/sds:issue-lane`、…)、
-更新は `/plugin marketplace update sds` で取り込める。
-
-**両ランタイム一括 — npx で一発:**
-
-```bash
-npx @reoring/sds            # claude + codex の両方を入れる
-npx @reoring/sds --codex    # Codex CLI 分だけ -> ~/.codex/skills/
-npx @reoring/sds --claude   # Claude Code 分だけ -> ~/.claude/skills/
-```
-
-fail-closed 設計: 既存のスキルディレクトリは `--force` なしでは上書きしない。
-`--dry-run` で事前確認できる。
-
-**手動(fallback):**
-
-```bash
-cp -r claude/* ~/.claude/skills/
-cp -r codex/* ~/.codex/skills/
-```
-
-スキルは自己完結している。スクリプトを使う環境には `herdr`(pane fleet の CLI)、
-`gh`、`jq`、`python3` が PATH にあること。
 
 ## 設計思想
 
