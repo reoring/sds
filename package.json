@@ -1,0 +1,37 @@
+{
+  "name": "@reoring/sds",
+  "version": "0.1.0",
+  "description": "Software Development Skills — staged dev-flow, 1-issue-1-lane lifecycle, event-driven fleet supervision, and PO session rotation for Claude Code and Codex agents. Run `npx @reoring/sds` to install.",
+  "bin": {
+    "sds": "bin/install.js"
+  },
+  "files": [
+    "bin",
+    "claude",
+    "codex",
+    "README.md",
+    "README.ja.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reoring/sds.git"
+  },
+  "homepage": "https://github.com/reoring/sds#readme",
+  "keywords": [
+    "claude-code",
+    "codex",
+    "agent",
+    "skills",
+    "multi-agent",
+    "workflow",
+    "orchestration"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

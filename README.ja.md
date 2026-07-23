@@ -158,11 +158,31 @@ herdr
 
 ## インストール
 
-```bash
-# Claude Code
-cp -r claude/* ~/.claude/skills/
+**Claude Code — plugin として(推奨):**
 
-# Codex CLI
+```
+/plugin marketplace add reoring/sds
+/plugin install sds@sds
+```
+
+スキルは名前空間つきで読み込まれ(`/sds:dev-flow`、`/sds:issue-lane`、…)、
+更新は `/plugin marketplace update sds` で取り込める。
+
+**両ランタイム一括 — npx で一発:**
+
+```bash
+npx @reoring/sds            # claude + codex の両方を入れる
+npx @reoring/sds --codex    # Codex CLI 分だけ -> ~/.codex/skills/
+npx @reoring/sds --claude   # Claude Code 分だけ -> ~/.claude/skills/
+```
+
+fail-closed 設計: 既存のスキルディレクトリは `--force` なしでは上書きしない。
+`--dry-run` で事前確認できる。
+
+**手動(fallback):**
+
+```bash
+cp -r claude/* ~/.claude/skills/
 cp -r codex/* ~/.codex/skills/
 ```
 
