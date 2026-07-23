@@ -53,6 +53,7 @@ for the volume.
 | [issue-lane](claude/issue-lane/SKILL.md) | 1 issue = 1 lane lifecycle: issue-ID labels on both tab and pane, teardown on issue close, ledger-controlled model boosts, three-way drift audit (tab × pane × tracker). |
 | [herdr-event-watch](claude/herdr-event-watch/SKILL.md) | Event-driven fleet supervision: durable inbox artifacts (primary), lane done/blocked transitions (backstop), PR required-check finalizations — instead of fixed-interval polling. |
 | [po-handover](claude/po-handover/SKILL.md) / [po-resume](claude/po-resume/SKILL.md) | PO session rotation (Claude Code only — POs run on Claude Code in this topology). Rotate at 50-60% context: the handover file is a map (in-flight deltas + pointers), the resuming session re-measures everything live, re-arms watchers, and loads the standard toolkit before working. |
+| [main-po-patrol](claude/main-po-patrol/SKILL.md) / [watch-po](claude/watch-po/SKILL.md) | The third tier for multi-project fleets: a **main PO** (a PO of POs) patrols each project PO's health — context usage, degradation, forced model switches — and drives rotations; watch-po is its standing event sensor (approval-prompt stalls, context thresholds, model switches, dead panes). Claude Code only. |
 
 Worker lanes may be **Codex or Claude Code agents** — default implementers:
 Codex `gpt-5.6-terra` (medium), Claude Code `sonnet`; higher tiers (Codex
@@ -134,6 +135,10 @@ herdr
   uses a `-review` suffix. Boosts are ledger-controlled and temporary.
 - Keep `pane list` readable as the live "what is in progress" view — that is
   the whole point of the topology.
+- **Running several projects at once?** Add a third tier: one **main PO**
+  session (also Claude Code, frontier model) that supervises the project POs
+  themselves — health patrols via main-po-patrol, a standing watch-po sensor,
+  and rotation driving. Its subjects are POs, never lanes.
 
 Each skill exists in two runtime variants:
 
