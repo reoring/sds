@@ -1,90 +1,106 @@
 ---
 name: dev-flow
-description: Staged development flow discipline — concept → read-only scout → design → PoC → certify → implement → manual live apply → observe → confirm. Use when starting any non-trivial feature, design, or issue work; when asked which stage the work is in; or before requesting approval for anything that mutates live state. Enforces per-stage receipts and fail-closed gates.
+description: Lightweight development flow — the default track for everyday work. source-only changes, dev/staging live applies, and zero-user production (owner-declared). Evidence is a merged PR + green CI + one ledger line; no sealing, no successor tickets, no verdict ping-pong. Routes irreversible or customer-visible work to prod-flow via a one-question track test. Keeps hollow-green defenses and a fix-plus-regression-gate rule for problems found live.
 ---
 
-# dev-flow — staged development flow
+# dev-flow — lightweight development flow (default track)
 
 **English** | [日本語](SKILL.ja.md)
 
-## Principle
+## Principle (one line)
 
-**Move contact with reality to the cheapest possible stage.** Expensive steps
-(live mutation, long pipelines, approval consumption) are for confirmation,
-never for discovery. Every stage takes the previous stage's receipt as input,
-so designs cannot close over an imagined environment.
+**Concentrate rigor at irreversible mutation gates; everywhere else, ship fast
+and let CI + PR review + regression gates carry the discipline.** Ceremony that
+duplicates a runtime fail-closed check is paying for the same safety twice.
 
-## The 8 stages
+This split was distilled from a real failure mode: a flow built for one-shot
+irreversible launches (sealed receipts, successor tickets, verdict documents)
+leaked into everyday development and made everything slow — while adding no
+safety where it was applied.
 
-| # | Stage | Output (receipt) | Gate to advance |
-|---|---|---|---|
-| 0 | Concept memo | 1-page what/why/success criteria (NOT a design) | — |
-| 1 | Scout | read-only env findings with exact commands; gaps stated honestly | receipt sealed; every design-relevant fact backed |
-| 2 | Design | design doc bound to scout facts + independent review | zero blocking findings; scout gaps marked blocking |
-| 3 | PoC | disposable spike receipt: what it proved AND what it did not | every first-time element has a disposition |
-| 4 | Certify | full-chain preflight log; sealed packet | whole execution chain green in isolated env — "zero first-time elements in live" proven |
-| 5 | Implement | merged PR (tests, CI, review) | CI green + approve + design consistency |
-| 6 | Manual live apply | durable execution terminal | packet valid; chain unchanged since stage 4 |
-| 7 | Observe | readback + soak receipt | readback matches; soak complete |
-| 8 | Confirm | sealed evidence; issue closed; lessons fed back | — |
+## The track question (ask first, every time)
 
-## Rules for a worker lane
+**"If this fails, do we lose a non-refundable consumable (approval, signature,
+publication, quota) — or does a real customer see it?"**
 
-- **Know your stage.** Your task prompt should say which stage you are
-  executing. If the upstream receipt (scout receipt, design verdict, PoC
-  receipt, packet) is missing, stop and report — do not reconstruct it from
-  memory.
-- **Scout is strictly read-only.** Investigation commands only (`gh api` GET,
-  `aws describe|list|get`, `kubectl get`, source reads). Record every fact as
-  "measured with `<command>`", never "should be". Record 403/unreachable as
-  "unobserved = blocking downstream"; never fill gaps with guesses.
-- **PoC output is disposable.** Never promote PoC code or fixtures to live.
-- **Stage 6 is a human gate.** Live mutation is manual, one-shot, record-first
-  (write-ahead receipt → execute → durable terminal). No auto-retry, no
-  auto-rollback. If your task asks you to mutate live state without a sealed
-  stage-4 packet, refuse and report.
-- **Produce your receipt before parking.** Path + SHA. Work without a receipt
-  does not exist.
-- **Never satisfy a test with a stub.** Turning tests green with a skeleton
-  implementation is a protocol defect: review adds a held-out test you never
-  saw, a stub cannot pass it, and the work is redone. If the real
-  implementation keeps defeating you, report that you are stuck — the
-  supervisor escalates gear via the ledger. Stubbing is never the answer.
-- **Never edit the tests you were given.** When tests are owned by another
-  lane (contract-test-first), any test diff from you is an instant rejection.
+- **No → this skill (lightweight, the default).**
+- **Yes → [prod-flow](../prod-flow/SKILL.md)** — the full staged flow with
+  packet sealing and a human GO gate.
 
-## Hollow-green defenses (for supervisors)
+Examples:
 
-"Green" is a proxy metric and workers can optimize it literally. Defend in
-three layers: (1) tests written and owned by a separate, stronger lane —
-implementer turns them green, never edits them; (2) merge gate requires green
-on a real-boundary harness — fake-client green is PoC evidence only; (3) one
-held-out test at review. A second hollow-green from the same lane is a
-circuit-breaker event: change the method (contract-test-first / boost /
-re-slice) instead of retrying. And when adopting a test gate, verify an honest
-implementation can actually go green in it — an impossible gate induces
-fabrication.
+- Lightweight: source-only changes (PR/CI cycle), live applies to dev/staging
+  estates, production with zero real users (owner-declared — see below).
+- prod-flow: customer-visible production mutation, signing/publication
+  semantics, org-level authority (account vending, permission changes),
+  anything that consumes a one-shot tuple.
 
-## Who runs what (when using a worker fleet)
+Never carry prod-flow equipment (packets, sealing, successor tickets,
+write-ahead receipts) into the lightweight track.
 
-- Implementation-heavy stages (3-5, 7) go to workers on the fleet standard
-  gear — Codex lanes: `gpt-5.6-terra` medium; Claude Code lanes: **`sonnet`**
-  as the default implementer.
-- Higher gear (Codex `sol` effort low; Claude Code `opus`) is
-  ledger-controlled boost/spot-review only — never resident.
-- Stage 6 (live) is a human gate: the owner or an explicitly authorized
-  executor, not a model.
+## Lightweight rules
+
+- **No sealing, no receipt-SHA reporting, no successor tickets.** A failure
+  means: fix it and run again.
+- Evidence = merged PR + green CI + one appended line in the project ledger
+  (CHANGELOG/EVENT or equivalent).
+- Scout = look (read-only) and paste your notes into the issue. Read-only
+  discipline still applies; guessing instead of looking is still forbidden.
+- PoC and certification collapse into "show it working once in an isolated
+  environment" — necessity at the implementer's discretion.
+- After a live apply, leave a one-line readback (the fact, no ceremony).
+- No state file. The issue / PR is the source of truth.
+
+## What is NOT cut (real gates, not ceremony)
+
+- **Hollow-green defenses.** Test ownership separation (RED tests written and
+  owned by a different lane; any implementer diff to tests = instant
+  rejection), a held-out test at review, and real-boundary green as the merge
+  gate. A fake environment cannot tell an honest implementation from a hollow
+  one.
+- **1 issue = 1 lane** (issue-lane skill).
+- **Environment identification is measured, not assumed** — estate mix-ups are
+  an accident class unrelated to speed, and cutting ceremony does not license
+  cutting this.
+
+## Zero-user production (owner-declared exception)
+
+Production with no real users may run on this track by explicit owner ruling.
+The trade is a single rule:
+
+- **A problem found live is closed only with fix + a recurrence gate**
+  (regression test / QA walk / harness addition) in the same change.
+- The same problem appearing live twice = the gate is defective → circuit
+  breaker: stop and redesign the gate, don't just try harder.
+- The exception expires the day real users arrive. Expiry is declared by the
+  owner, never assumed.
+
+This flips the discipline from pre-emptive ceremony to post-hoc hardening:
+release fast, find problems live, make each one structurally unrepeatable.
+
+## Review rules (no verdict ping-pong)
+
+- No CONFORMS / NOT-CONFORMS verdict documents on this track. Review = PR
+  approve / request-changes with inline comments.
+- Reviewers state **all blocking findings in the first pass** (no
+  drip-feeding). A late blocking finding that was visible in round 1 is a
+  reviewer defect (breakage newly introduced by rework is exempt).
+- Re-review checks **only the delta** of the requested changes.
+- **Two rounds without convergence = circuit breaker**: stop the async
+  ping-pong; put reviewer and implementer in one conversation, or have the
+  owner adjudicate the remaining points.
 
 ## Circuit breaker
 
-Count progress in outcomes (real mutations, readbacks, remaining stages), not
-in receipts or successor tickets. On 2 rejections of the same operation, 30
-minutes of stall, or 3 consecutive protocol defects: stop spawning successors
-and redesign the method. Fail-closed is not a license to loop a broken method.
+Count progress in outcomes (merged PRs, readbacks) — not process artifacts. On
+2 rejections of the same operation, 30 minutes of stall, or a second
+hollow-green from the same lane: stop and change the method (re-slice the
+issue, switch to contract-test-first, or apply a ledger-controlled gear boost).
 
-## Project override
+## Project adaptation
 
-If the repo/vault has a canonical dev-flow document, that document wins; this
-skill provides the defaults for projects that lack one. To adopt in a new
-project, copy the stage table into a canonical doc and add project-specific
-gates, owners, and paths there.
+If the project has its own canonical flow document, that document wins; this
+skill is the default for projects without one. Pair it with
+[prod-flow](../prod-flow/SKILL.md) for the heavy path, and record the track
+ruling ("what counts as consumable / customer-visible here") in the project's
+canonical doc as it accumulates.

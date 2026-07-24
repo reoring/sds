@@ -1,7 +1,7 @@
 {
   "name": "@reoring/sds",
   "version": "0.1.0",
-  "description": "Software Development Skills — staged dev-flow, 1-issue-1-lane lifecycle, event-driven fleet supervision, and PO session rotation for Claude Code and Codex agents. Run `npx @reoring/sds` to install.",
+  "description": "Software Development Skills — two-track dev-flow + prod-flow, 1-issue-1-lane lifecycle, event-driven fleet supervision, and PO session rotation for Claude Code and Codex agents. Run `npx @reoring/sds` to install.",
   "bin": {
     "sds": "bin/install.js"
   },

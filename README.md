@@ -7,8 +7,9 @@ development. Generalized from a real multi-agent production workflow where a
 supervisor (PO) session plans work, files tracker issues, and dispatches
 implementation to worker lanes:
 
-> plan with **dev-flow** → assign each issue to exactly one lane with
-> **issue-lane** → supervise event-driven with **herdr-event-watch**.
+> pick the track with **dev-flow** (lightweight default; **prod-flow** for
+> irreversible / customer-visible work) → assign each issue to exactly one
+> lane with **issue-lane** → supervise event-driven with **herdr-event-watch**.
 
 ## Install
 
@@ -82,7 +83,8 @@ for the volume.
 
 | Skill | What it enforces |
 |---|---|
-| [dev-flow](claude/dev-flow/SKILL.md) | Staged flow: concept → read-only scout → design → PoC → certify → implement → manual live apply → observe → confirm. Per-stage receipts, fail-closed gates, rollback table, circuit breaker. |
+| [dev-flow](claude/dev-flow/SKILL.md) | Lightweight default track: PR + CI + one ledger line as evidence — no sealing, no successor tickets, no verdict ping-pong. A one-question test ("if this fails, do we lose a consumable or does a customer see it?") routes heavy work to prod-flow. Problems found live close only with a recurrence gate. |
+| [prod-flow](claude/prod-flow/SKILL.md) | Full-rigor staged flow for irreversible / customer-visible work: concept → read-only scout → design → PoC → certify → implement → manual live apply → observe → confirm. Packet sealing (GO bound to a packet digest), per-stage receipts, fail-closed gates, review round limits, rollback table, circuit breaker. |
 | [issue-lane](claude/issue-lane/SKILL.md) | 1 issue = 1 lane lifecycle: issue-ID labels on both tab and pane, teardown on issue close, ledger-controlled model boosts, three-way drift audit (tab × pane × tracker). |
 | [herdr-event-watch](claude/herdr-event-watch/SKILL.md) | Event-driven fleet supervision: durable inbox artifacts (primary), lane done/blocked transitions (backstop), PR required-check finalizations — instead of fixed-interval polling. |
 | [po-handover](claude/po-handover/SKILL.md) / [po-resume](claude/po-resume/SKILL.md) | PO session rotation (Claude Code only — POs run on Claude Code in this topology). Rotate at 50-60% context: the handover file is a map (in-flight deltas + pointers), the resuming session re-measures everything live, re-arms watchers, and loads the standard toolkit before working. |
@@ -112,7 +114,8 @@ repo was distilled from — an MVP taken from planning to a live deployment):
 
 1. **Bootstrap.** Create the `<project>` PO space (Claude Code on Opus 4.8 /
    Fable 5, tab `po`) and the `<project>-impl` worker space.
-2. **Plan — dev-flow stages 0–2.** The PO writes the concept memo, dispatches
+2. **Plan — prod-flow stages 0–2** (for the heavy path; everyday work rides
+   dev-flow's lightweight track instead). The PO writes the concept memo, dispatches
    a read-only scout lane, then designs against the scout receipt and routes
    an independent review. No design without ground truth.
 3. **File issues.** The PO breaks the reviewed design into tracker issues
@@ -128,7 +131,7 @@ repo was distilled from — an MVP taken from planning to a live deployment):
    breakthrough.
 6. **Close the loop.** Tracker says Done → tear the lane down (issue-lane);
    file follow-up issues as reviews surface them.
-7. **Ship — dev-flow stages 4–8.** Certify the full chain in isolation, apply
+7. **Ship — prod-flow stages 4–8.** Certify the full chain in isolation, apply
    to live manually through the human gate, observe (readback + soak), then
    confirm and feed the lessons back into the flow doc.
 
@@ -151,7 +154,7 @@ herdr
     └── tab "PROJ-124-review"       pane "<project>/PROJ-124-review" reviewer (read-only)
 ```
 
-- **One PO per project.** The PO session plans with dev-flow, files tracker
+- **One PO per project.** The PO session plans with dev-flow / prod-flow, files tracker
   issues, assigns lanes with issue-lane, and supervises with
   herdr-event-watch. It lives in the project's own space under a tab labeled
   `po` (exempt from the issue-ID label rule) and never implements — it
